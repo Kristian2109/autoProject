@@ -20,7 +20,8 @@ def configure(base_url, root=ROOT):
     ET.register_namespace('', namespace)
     sitemap = ET.Element(f'{{{namespace}}}urlset')
     for path in sorted(root.glob('*.html')):
-        url = f'{base_url}/' if path.name == 'index.html' else f'{base_url}/{path.name}'
+        # Cloudflare Pages redirects /about.html to /about (and /index.html to /).
+        url = f'{base_url}/' if path.name == 'index.html' else f'{base_url}/{path.stem}'
         content = path.read_text(encoding='utf-8')
         # Replace previous generated URLs when running again or changing domain.
         content = re.sub(r'\s*<(?:link rel="canonical"|meta property="og:(?:url|image)")[^>]*>', '', content)
