@@ -1,18 +1,20 @@
 # Анекс — Автотапицерия
 
-Статичен сайт на български с HTML, CSS и JavaScript. Няма framework, зависимости, компилация или backend. Ресурсите са локални и сайтът може да се отвори и директно през `index.html`.
+Статичен сайт на български с HTML, CSS и JavaScript. Няма framework, runtime зависимости, компилация или backend. Публичните файлове са в `public/`, а Wrangler е само инструмент за локален преглед и ръчно публикуване. Сайтът може да се отвори и директно през `public/index.html`.
 
 ## Локален преглед
 
 От директорията на проекта:
 
 ```bash
-python3 -m http.server 8000 --bind 127.0.0.1
+python3 -m http.server 8000 --bind 127.0.0.1 --directory public
 ```
 
 Отворете `http://localhost:8000`.
 
 ## Страници
+
+Всички страници и ресурси по-долу са в `public/`.
 
 - `index.html`: представяне, услуги и избрани изработки.
 - `about.html`: история и подход на ателието.
@@ -63,9 +65,57 @@ python3 -m http.server 8000 --bind 127.0.0.1
 python3 scripts/configure_seo.py https://your-domain.bg
 ```
 
-Командата може да се изпълнява многократно и поддържа сайт в поддиректория. Примерният адрес в командата трябва да се замени с действителния домейн. Скриптът е помощен локален инструмент; Python не е нужен на хостинга.
+Командата може да се изпълнява многократно и поддържа сайт в поддиректория. Примерният адрес в командата трябва да се замени с действителния домейн. Скриптът актуализира HTML файловете в `public/` и записва там `sitemap.xml` и `robots.txt`. Той е помощен локален инструмент; Python не е нужен на хостинга.
 
-Качете HTML файловете, `assets/`, `robots.txt` и генерирания `sitemap.xml` на статичен хостинг с HTTPS. Не е необходимо да качвате `scripts/` или README. Сайтът не е публикуван автоматично.
+Публикуването е ръчно в Cloudflare Pages, както е описано по-долу.
+
+## Cloudflare Pages — manual deployment
+
+Run all commands from the **project root**. Install Node.js 22 or newer with npm. Wrangler is pinned in `package.json` and `package-lock.json`; it is a development dependency only.
+
+### First-time setup
+
+```bash
+npm ci
+npx wrangler login
+npx wrangler pages project create anex-avtotapiceria --production-branch=master
+```
+
+Create a **Direct Upload** Pages project without connecting GitHub. `anex-avtotapiceria` is the configured project name; if you choose another name or already have a project, update `name` in `wrangler.jsonc` and use that name when creating the project. Skip project creation for an existing Direct Upload project.
+
+The production branch is `master`, matching this repository. It labels manual deployments and does not configure automatic Git deployment. If you choose another production branch, use it in project creation and the `deploy` script in `package.json`.
+
+### Deploy
+
+```bash
+npm run deploy
+```
+
+Equivalent Wrangler command:
+
+```bash
+npx wrangler pages deploy --branch=master
+```
+
+`wrangler.jsonc` sets `pages_build_output_dir` to `./public`, so Wrangler uploads that folder directly. There is **no build step**. Use `npx wrangler pages deploy public --branch=master` if you prefer an explicit directory. Uploading `.` would include project tooling alongside the site; use the configured `public/` directory instead.
+
+Wrangler prints the deployed URL. Git commits and GitHub pushes remain source-control operations; publishing requires the manual command. No deployment workflow or Git integration is configured in this repository.
+
+### Local Pages preview and preview deployment
+
+```bash
+npm run dev
+```
+
+This serves `public/` through the local Pages runtime. To upload a separate preview deployment manually:
+
+```bash
+npm run deploy:preview
+```
+
+That command uses the `preview` branch label. Before a production deployment, run the optional SEO helper with the final public domain when it is known.
+
+Cloudflare documents this workflow in [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/) and [Pages Wrangler configuration](https://developers.cloudflare.com/pages/functions/wrangler-configuration/). A Direct Upload project cannot later be converted to Git integration; automatic Git deployment would require a separate Pages project.
 
 ## Проверки
 
