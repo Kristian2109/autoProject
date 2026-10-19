@@ -1,7 +1,7 @@
 "use strict";
 
 // The site is static. An enquiry is composed locally and opened in the visitor's email app.
-const CONTACT_EMAIL = "kristian.petrov1998@gmail.com";
+const CONTACT_EMAIL = "aneksauto@gmail.com";
 
 const menuToggle = document.querySelector(".menu-toggle");
 const navigation = document.querySelector(".site-nav");
