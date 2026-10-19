@@ -1,6 +1,5 @@
 "use strict";
 
-// The site is static. An enquiry is composed locally and opened in the visitor's email app.
 const CONTACT_EMAIL = "aneksauto@gmail.com";
 
 const menuToggle = document.querySelector(".menu-toggle");
@@ -31,7 +30,7 @@ document.addEventListener("keydown", (event) => {
 navigation
   ?.querySelectorAll("a")
   .forEach((link) => link.addEventListener("click", closeMenu));
-window.matchMedia("(min-width: 851px)").addEventListener("change", closeMenu);
+window.matchMedia("(min-width: 1001px)").addEventListener("change", closeMenu);
 
 const filterButtons = [...document.querySelectorAll(".filter")];
 const galleryCards = [
