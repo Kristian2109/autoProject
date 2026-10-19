@@ -598,7 +598,7 @@ p {
   align-items: center;
   gap: 12px;
 }
-.project-card h3 {
+.project-card :is(h2, h3) {
   font-size: 1.0625rem;
   margin: 0;
   letter-spacing: 0;
@@ -1573,7 +1573,7 @@ p {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
     gap: 15px;
   }
-  .project-card h3 {
+  .project-card :is(h2, h3) {
     font-size: 0.9375rem;
   }
   .project-id {
@@ -1655,7 +1655,7 @@ p {
     grid-template-columns: 1fr;
     gap: 25px;
   }
-  .gallery-grid .project-card h3 {
+  .gallery-grid .project-card :is(h2, h3) {
     font-size: 1rem;
   }
   .gallery-grid .project-type {

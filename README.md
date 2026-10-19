@@ -57,17 +57,23 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory public
 
 ## SEO и публикуване
 
-Включени са `lang="bg"`, уникални заглавия и описания, семантични секции, една H1 във всяка страница, alt текстове, Open Graph данни, robots.txt и JSON-LD `AutomotiveBusiness` с бизнес контактите. „CEO“ в заданието е интерпретирано като „SEO“.
+Включени са `lang="bg"`, уникални заглавия и описания за услугите в София, семантични секции, една H1 във всяка страница, описателни alt текстове и Open Graph данни. Началната страница и контактите съдържат JSON-LD `AutomotiveBusiness` — специализиран вид `LocalBusiness` — със съществуващите име, адрес, телефони и имейл. Не са добавяни непотвърдени работни дни, координати, оценки или профили в Google. В галерията заглавията на изработките са H2 под основното H1, без промяна във външния им вид.
 
-Домейнът още не е предоставен. След като го изберете, генерирайте реалните canonical и social URL адреси и XML карта:
+Потвърденият production адрес е **https://anex.bg**. Canonical адресите, социалните метаданни, бизнес и breadcrumb JSON-LD, `sitemap.xml` и `robots.txt` са генерирани за него. За повторно генериране:
 
 ```bash
-python3 scripts/configure_seo.py https://your-domain.bg
+python3 scripts/configure_seo.py https://anex.bg
 ```
 
-Командата може да се изпълнява многократно и поддържа сайт в поддиректория. Примерният адрес в командата трябва да се замени с действителния домейн. Скриптът актуализира HTML файловете в `public/` и записва там `sitemap.xml` и `robots.txt`. SEO адресите използват пътища без `.html`, съответстващи на пренасочванията на Cloudflare Pages. Той е помощен локален инструмент; Python не е нужен на хостинга.
+Командата изисква окончателния HTTPS адрес. Не използвайте примерния домейн или временен адрес за преглед. Тя добавя canonical URL, `og:url`, социално изображение, абсолютни адреси в бизнес данните и `BreadcrumbList` за съществуващата навигация. Актуализира HTML файловете в `public/` и записва там `sitemap.xml` и `robots.txt`. Адресите са без `.html`, съответстващи на пренасочванията на Cloudflare Pages. Запазват се съществуващите бизнес данни и видимият текст; повторното изпълнение не дублира метаданните. `404.html` и страници с `noindex` не влизат в sitemap. Помощният инструмент няма допълнителни Python зависимости и не се изпълнява при посещение на сайта.
 
-Публикуването е ръчно в Cloudflare Pages, както е описано по-долу.
+След първото изпълнение commit-нете генерираните HTML/XML/TXT файлове. Пускайте командата отново при смяна на домейна или добавяне/премахване на страници. Cloudflare Pages продължава да публикува само `public/` без build процес. В Git-свързан Pages проект настройките са Framework: None, Build command: празно, Build output: `public`; ръчният Wrangler workflow е описан по-долу като алтернатива.
+
+Банерът използва същата снимка в WebP с варианти 640/960/1280/1920 px и съгласуван responsive preload. Останалите архивни снимки са малки JPEG файлове с размери в HTML, lazy loading и асинхронно декодиране. `404.html` е технически обработчик, който позволява на Cloudflare да връща истински 404 отговори вместо homepage fallback за несъществуващи адреси. Той е с `noindex` и не е нова страница за SEO съдържание.
+
+Предоставеният от клиента [Google Business Profile](https://share.google/JVaPKbj8iBupffUvb) е записан като `sameAs` в бизнес JSON-LD. Линкът се пренасочва към Google профил „Автотапицер Анекс“; Google блокира автоматизираната проверка на адреса и телефона. Съществуващите контакти са запазени и не са добавяни непотвърдени часове, координати или оценки. Сравнете контактите ръчно с профила при финалния преглед.
+
+При проверката на 19.10.2026 г. `anex.bg` не се разрешаваше през DNS от средата за разработка. Свържете домейна с Cloudflare Pages и проверете HTTPS след активиране на DNS. След публикуване проверете `/robots.txt`, `/sitemap.xml`, canonical адресите и един несъществуващ URL; подайте `https://anex.bg/sitemap.xml` в Google Search Console и проверете бизнес данните с Rich Results Test. Метаданните и sitemap не гарантират позиции или индексиране.
 
 ## Cloudflare Pages — manual deployment
 
@@ -81,7 +87,7 @@ npx wrangler login
 npx wrangler pages project create anex-avtotapiceria --production-branch=master
 ```
 
-Create a **Direct Upload** Pages project without connecting GitHub. `anex-avtotapiceria` is the configured project name; if you choose another name or already have a project, update `name` in `wrangler.jsonc` and use that name when creating the project. Skip project creation for an existing Direct Upload project.
+These are the optional **Direct Upload** setup commands. For the existing Git-connected Pages workflow, keep the GitHub connection and skip project creation. `anex-avtotapiceria` is the Wrangler project name; if your existing Pages project has another name, update `name` in `wrangler.jsonc` before using the manual deploy commands.
 
 The production branch is `master`, matching this repository. It labels manual deployments and does not configure automatic Git deployment. If you choose another production branch, use it in project creation and the `deploy` script in `package.json`.
 
@@ -99,7 +105,7 @@ npx wrangler pages deploy --branch=master
 
 `wrangler.jsonc` sets `pages_build_output_dir` to `./public`, so Wrangler uploads that folder directly. There is **no build step**. Use `npx wrangler pages deploy public --branch=master` if you prefer an explicit directory. Uploading `.` would include project tooling alongside the site; use the configured `public/` directory instead.
 
-Wrangler prints the deployed URL. Git commits and GitHub pushes remain source-control operations; publishing requires the manual command. No deployment workflow or Git integration is configured in this repository.
+Wrangler prints the deployed URL. With Direct Upload, publishing requires the manual command. With a Git-connected Pages project, deployments follow the production/preview branch controls configured in the Cloudflare dashboard. No GitHub Actions deployment workflow is required.
 
 ### Local Pages preview and preview deployment
 
@@ -118,5 +124,13 @@ That command uses the `preview` branch label. Before a production deployment, ru
 Cloudflare documents this workflow in [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/) and [Pages Wrangler configuration](https://developers.cloudflare.com/pages/functions/wrangler-configuration/). A Direct Upload project cannot later be converted to Git integration; automatic Git deployment would require a separate Pages project.
 
 ## Проверки
+
+За регресионните проверки на SEO помощника:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Те покриват валидиране на HTTPS адреса преди промени по файловете, повторно изпълнение, смяна на домейн, sitemap без 404/noindex страници, запазване на видимия HTML и непроменени контакти в JSON-LD.
 
 Всичките шест страници са проверени в Chromium при ширини 320, 390, 768, 1024 и 1440 px. Проверени са мобилното меню, филтрите и диалогът на галерията, клавиатурната навигация, валидацията на формата и съдържанието на подготвеното писмо. Няма JavaScript грешки, липсващи ресурси или хоризонтално излизане извън екрана. Автоматичната проверка с axe за WCAG 2 A/AA и WCAG 2.1 AA не отчита нарушения. Проверени са вътрешните връзки, JSON-LD и повторното генериране на SEO адресите.
